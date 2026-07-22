@@ -7,72 +7,68 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
     
-    /* 모바일 기본 패딩 및 중앙 정렬 */
     body { 
       background-color: #f1f5f9; 
       display: flex; 
       justify-content: center; 
-      padding: 16px 12px; 
+      padding: 12px 8px; 
       color: #334155; 
       min-height: 100vh;
     }
     
-    /* 반응형 메인 컨테이너 */
     .container { 
       background: #ffffff; 
       width: 100%; 
-      max-width: 480px; /* PC/태블릿 상한선 */
-      padding: 20px 16px; 
-      border-radius: 16px; 
-      box-shadow: 0 4px 20px rgba(0,0,0,0.06); 
+      max-width: 440px; 
+      padding: 16px 14px; 
+      border-radius: 14px; 
+      box-shadow: 0 4px 16px rgba(0,0,0,0.05); 
       height: fit-content;
     }
     
-    h1 { font-size: 1.25rem; margin-bottom: 16px; color: #0f172a; text-align: center; font-weight: 700; }
+    h1 { font-size: 1.15rem; margin-bottom: 12px; color: #0f172a; text-align: center; font-weight: 700; }
     
-    /* 폼 레이아웃 - 모바일 유연성 강화 */
+    /* 폼 레이아웃 슬림화 */
     .form-group { 
       display: flex; 
       flex-direction: column; 
-      gap: 10px; 
-      margin-bottom: 16px; 
+      gap: 8px; 
+      margin-bottom: 14px; 
       background: #f8fafc; 
-      padding: 14px; 
-      border-radius: 12px; 
+      padding: 12px; 
+      border-radius: 10px; 
       border: 1px solid #e2e8f0; 
     }
     
-    /* 모바일 폭이 좁아지면 자동으로 줄바꿈(wrap) 처리 */
     .form-row { 
       display: flex; 
-      gap: 8px; 
+      gap: 6px; 
       align-items: center; 
-      flex-wrap: wrap; 
     }
     
     .form-label { 
-      font-size: 0.8rem; 
+      font-size: 0.78rem; 
       font-weight: 600; 
       color: #475569; 
-      width: 100px; 
+      width: 80px; 
       flex-shrink: 0; 
     }
     
-    /* 입력창 및 셀렉트 박스 유연화 */
+    /* 입력창 모바일 컴팩트 스타일 */
     input[type="text"],
     input[type="number"],
     input[type="date"],
     select { 
-      flex: 1 1 120px; /* 최소 120px 보장 후 flex 채움 */
-      width: 100%;
-      min-width: 0; /* 모바일 input 삐져나감 방지 */
-      padding: 10px 12px; 
+      flex: 1;
+      min-width: 0; /* flex 박스 내부 넘침 방지 */
+      height: 36px; /* 박스 높이 고정으로 슬림화 */
+      padding: 0 10px; 
       border: 1px solid #cbd5e1; 
-      border-radius: 8px; 
+      border-radius: 6px; 
       outline: none; 
-      font-size: 0.85rem; 
+      font-size: 0.82rem; 
       background-color: #fff;
-      -webkit-appearance: none; /* iOS 기본 스타일 제거 */
+      -webkit-appearance: none;
     }
     
     input:focus, select:focus { border-color: #3b82f6; }
@@ -80,22 +76,22 @@
     .checkbox-row { 
       display: flex; 
       align-items: center; 
-      gap: 8px; 
-      font-size: 0.85rem; 
+      gap: 6px; 
+      font-size: 0.8rem; 
       color: #64748b; 
       margin-top: 2px; 
     }
-    .checkbox-row input { flex: none; width: 18px; height: 18px; cursor: pointer; }
+    .checkbox-row input { flex: none; width: 16px; height: 16px; cursor: pointer; }
     
     .add-btn { 
       background: #3b82f6; 
       color: #fff; 
       border: none; 
-      padding: 12px; 
-      border-radius: 8px; 
+      height: 40px; 
+      border-radius: 6px; 
       cursor: pointer; 
       font-weight: 700; 
-      font-size: 0.95rem; 
+      font-size: 0.88rem; 
       margin-top: 4px; 
       width: 100%;
     }
@@ -106,67 +102,60 @@
       display: flex; 
       justify-content: space-around; 
       background: #eff6ff; 
-      padding: 12px 14px; 
-      border-radius: 10px; 
-      margin-bottom: 16px; 
+      padding: 10px 12px; 
+      border-radius: 8px; 
+      margin-bottom: 14px; 
     }
     .summary-item { text-align: center; }
-    .summary-item .label { font-size: 0.75rem; color: #64748b; margin-bottom: 2px; }
-    .summary-item .value { font-size: 1.05rem; font-weight: 700; color: #1e40af; }
+    .summary-item .label { font-size: 0.7rem; color: #64748b; margin-bottom: 2px; }
+    .summary-item .value { font-size: 0.98rem; font-weight: 700; color: #1e40af; }
     .summary-item.saved .value { color: #059669; }
 
-    /* 리스트 스타일 */
-    .section-title { font-size: 0.95rem; font-weight: 700; margin: 16px 0 8px 0; color: #334155; }
-    .item-list { list-style: none; margin-bottom: 12px; }
+    /* 리스트 스타일 컴팩트화 */
+    .section-title { font-size: 0.88rem; font-weight: 700; margin: 12px 0 6px 0; color: #334155; }
+    .item-list { list-style: none; margin-bottom: 10px; }
     
     .item-card { 
       display: flex; 
       justify-content: space-between; 
       align-items: center; 
-      padding: 10px 12px; 
+      padding: 8px 10px; 
       background: #ffffff; 
       border: 1px solid #e2e8f0; 
-      border-radius: 10px; 
-      margin-bottom: 8px; 
-      gap: 8px;
+      border-radius: 8px; 
+      margin-bottom: 6px; 
+      gap: 6px;
     }
     .item-card.deleted { background: #f8fafc; opacity: 0.75; }
     
-    .item-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .item-main { display: flex; align-items: center; gap: 8px; min-width: 0; }
     .item-logo { 
-      width: 32px; 
-      height: 32px; 
-      border-radius: 8px; 
+      width: 28px; 
+      height: 28px; 
+      border-radius: 6px; 
       background: #e2e8f0; 
       display: flex; 
       align-items: center; 
       justify-content: center; 
-      font-size: 0.75rem; 
+      font-size: 0.7rem; 
       font-weight: 700; 
       flex-shrink: 0; 
       color: #475569;
     }
     
     .item-info-text { min-width: 0; overflow: hidden; }
-    .item-title { font-size: 0.85rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .item-sub { font-size: 0.7rem; color: #64748b; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-title { font-size: 0.82rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-sub { font-size: 0.68rem; color: #64748b; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
     .item-right { text-align: right; flex-shrink: 0; }
-    .item-price { font-size: 0.9rem; font-weight: 700; color: #0f172a; }
-    .action-btn { background: none; border: none; font-size: 0.75rem; color: #ef4444; cursor: pointer; margin-top: 2px; text-decoration: underline; padding: 2px 0; }
+    .item-price { font-size: 0.85rem; font-weight: 700; color: #0f172a; }
+    .action-btn { background: none; border: none; font-size: 0.7rem; color: #ef4444; cursor: pointer; margin-top: 1px; text-decoration: underline; padding: 2px 0; }
     .restore-btn { color: #10b981; }
-    .empty-msg { text-align: center; color: #94a3b8; padding: 14px 0; font-size: 0.8rem; }
+    .empty-msg { text-align: center; color: #94a3b8; padding: 10px 0; font-size: 0.78rem; }
 
-    /* 초기화 버튼 구역 */
-    .reset-container { text-align: center; margin-top: 20px; padding-top: 14px; border-top: 1px dashed #e2e8f0; }
-    .reset-btn { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; }
-    
-    /* 모바일 전용 미디어 쿼리 디테일 */
-    @media (max-width: 380px) {
-      .container { padding: 14px 10px; }
-      .form-label { width: 100%; margin-bottom: -4px; }
-      .form-row { flex-direction: column; align-items: stretch; }
-    }
+    /* 초기화 버튼 */
+    .reset-container { text-align: center; margin-top: 16px; padding-top: 10px; border-top: 1px dashed #e2e8f0; }
+    .reset-btn { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.72rem; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -177,7 +166,7 @@
   <!-- 1. 입력 폼 -->
   <div class="form-group">
     <div class="form-row">
-      <input type="text" id="name" placeholder="서비스/지출명 (예: 넷플릭스)" autocomplete="off">
+      <input type="text" id="name" placeholder="서비스/지출명" autocomplete="off">
       <input type="number" id="price" placeholder="금액 (원)" autocomplete="off">
     </div>
 
@@ -228,7 +217,7 @@
   <ul class="item-list" id="activeList"></ul>
 
   <!-- 4. 해지/삭제된 항목 보관함 -->
-  <div class="section-title" style="color: #64748b; margin-top: 20px;">해지된 항목 보관함</div>
+  <div class="section-title" style="color: #64748b; margin-top: 16px;">해지된 항목 보관함</div>
   <ul class="item-list" id="deletedList"></ul>
 
   <!-- 5. 초기화 버튼 -->
