@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스마트 구독 & 지출 관리자</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; }
+    body { background-color: #f1f5f9; display: flex; justify-content: center; padding: 30px 16px; color: #334155; }
+    .container { background: #ffffff; width: 100%; max-width: 500px; padding: 24px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+    
+    h1 { font-size: 1.35rem; margin-bottom: 20px; color: #0f172a; text-align: center; }
+    
+    /* 폼 레이아웃 */
+    .form-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0; }
+    .form-row { display: flex; gap: 8px; align-items: center; }
+    .form-label { font-size: 0.85rem; font-weight: bold; color: #475569; width: 110px; flex-shrink: 0; }
+    
+    input, select { flex: 1; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 0.9rem; }
+    input:focus, select:focus { border-color: #3b82f6; }
+    
+    .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #64748b; margin-top: 2px; }
+    .checkbox-row input { flex: none; width: 16px; height: 16px; cursor: pointer; }
+    
+    .postpaid-date-row { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+
+    .add-btn { background: #3b82f6; color: #fff; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.95rem; margin-top: 4px; }
+    .add-btn:hover { background: #2563eb; }
+
+    /* 대시보드 요약 카드 */
+    .summary-card { display: flex; justify-content: space-between; background: #eff6ff; padding: 14px 16px; border-radius: 10px; margin-bottom: 20px; }
+    .summary-item { text-align: center; }
+    .summary-item .label { font-size: 0.75rem; color: #64748b; margin-bottom: 4px; }
+    .summary-item .value { font-size: 1.1rem; font-weight: bold; color: #1e40af; }
+    .summary-item.saved .value { color: #059669; }
+
+    /* 리스트 스타일 */
+    .section-title { font-size: 1rem; font-weight: bold; margin: 16px 0 10px 0; display: flex; justify-content: space-between; align-items: center; }
+    .item-list { list-style: none; margin-bottom: 16px; }
+    .item-card { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 8px; }
+    .item-card.deleted { background: #f8fafc; opacity: 0.7; }
+    
+    .item-main { display: flex; align-items: center; gap: 10px; }
+    .item-logo { width: 28px; height: 28px; border-radius: 6px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; }
+    .item-title { font-size: 0.9rem; font-weight: bold; }
+    .item-sub { font-size: 0.75rem; color: #64748b; margin-top: 2px; }
+    
+    .item-right { text-align: right; }
+    .item-price { font-size: 0.95rem; font-weight: bold; color: #0f172a; }
+    .action-btn { background: none; border: none; font-size: 0.75rem; color: #ef4444; cursor: pointer; margin-top: 4px; text-decoration: underline; }
+    .restore-btn { color: #10b981; }
+    .empty-msg { text-align: center; color: #94a3b8; padding: 16px 0; font-size: 0.85rem; }
+
+    /* 초기화 버튼 구역 */
+    .reset-container { text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px dashed #e2e8f0; }
+    .reset-btn { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
+    .reset-btn:hover { background: #fee2e2; color: #ef4444; border-color: #fca5a5; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>💳 구독 & 정기지출 관리자</h1>
+
+  <!-- 1. 입력 폼 -->
+  <div class="form-group">
+    <!-- 서비스명 & 금액 -->
+    <div class="form-row">
+      <input type="text" id="name" placeholder="서비스/지출명 (예: 넷플릭스)" autocomplete="off">
+      <input type="number" id="price" placeholder="금액 (원)" autocomplete="off">
+    </div>
+
+    <!-- 카테고리 선택 -->
+    <div class="form-row">
+      <select id="category">
+        <option value="🎬 OTT/영상">🎬 OTT/영상</option>
+        <option value="🎵 음원">🎵 음원</option>
+        <option value="🛍️ 쇼핑/멤버십">🛍️ 쇼핑/멤버십</option>
+        <option value="🛵 배달/푸드">🛵 배달/푸드</option>
+        <option value="☁️ 클라우드/IT">☁️ 클라우드/IT</option>
+        <option value="🏠 월세/고정비">🏠 월세/고정비</option>
+        <option value="📦 기타">📦 기타</option>
+      </select>
+    </div>
+
+    <!-- 지출 발생일 (달력) -->
+    <div class="form-row">
+      <span class="form-label">지출 발생일</span>
+      <input type="date" id="spentDate">
+    </div>
+
+    <!-- 후불 결제 체크박스 -->
+    <div class="checkbox-row">
+      <input type="checkbox" id="isPostpaid" onchange="togglePostpaidInput()">
+      <label for="isPostpaid">후불 결제 (신용카드)</label>
+    </div>
+
+    <!-- 카드 결제일 선택 (체크 시 나타남, 달력 방식) -->
+    <div class="form-row postpaid-date-row" id="payDayContainer" style="display: none;">
+      <span class="form-label" style="color: #2563eb;">카드 결제일</span>
+      <input type="date" id="payDate">
+    </div>
+
+    <button class="add-btn" onclick="addItem()">지출 추가하기</button>
+  </div>
+
+  <!-- 2. 상단 총액 수치 카드 -->
+  <div class="summary-card">
+    <div class="summary-item">
+      <div class="label">월 정기 지출</div>
+      <div class="value" id="totalActive">0원</div>
+    </div>
+    <div class="summary-item saved">
+      <div class="label">해지로 아낀 돈</div>
+      <div class="value" id="totalSaved">0원</div>
+    </div>
+  </div>
+
+  <!-- 3. 활성 구독 목록 -->
+  <div class="section-title">유지 중인 구독/지출</div>
+  <ul class="item-list" id="activeList"></ul>
+
+  <!-- 4. 해지/삭제된 항목 보관함 -->
+  <div class="section-title" style="color: #64748b; margin-top: 24px;">해지된 항목 보관함</div>
+  <ul class="item-list" id="deletedList"></ul>
+
+  <!-- 5. 초기화 버튼 -->
+  <div class="reset-container">
+    <button class="reset-btn" onclick="resetAllData()">🗑️ 모든 데이터 초기화</button>
+  </div>
+</div>
+
+<script>
+  let items = JSON.parse(localStorage.getItem('myExpenditures')) || [];
+
+  // 기본 날짜 세팅 (오늘 날짜)
+  const todayStr = new Date().toISOString().substring(0, 10);
+  document.getElementById('spentDate').value = todayStr;
+  document.getElementById('payDate').value = todayStr;
+
+  render();
+
+  function togglePostpaidInput() {
+    const isPostpaid = document.getElementById('isPostpaid').checked;
+    document.getElementById('payDayContainer').style.display = isPostpaid ? 'flex' : 'none';
+  }
+
+  function addItem() {
+    const name = document.getElementById('name').value.trim();
+    const price = Number(document.getElementById('price').value);
+    const category = document.getElementById('category').value;
+    const spentDate = document.getElementById('spentDate').value;
+    const isPostpaid = document.getElementById('isPostpaid').checked;
+    const payDate = isPostpaid ? document.getElementById('payDate').value : null;
+
+    if (!name || isNaN(price) || price <= 0) {
+      alert('올바른 이름과 금액을 입력해 주세요.');
+      return;
+    }
+
+    const newItem = {
+      id: Date.now(),
+      name,
+      price,
+      category,
+      spentDate,
+      isPostpaid,
+      payDate,
+      status: 'active'
+    };
+
+    items.push(newItem);
+    saveAndRender();
+
+    // 폼 초기화
+    document.getElementById('name').value = '';
+    document.getElementById('price').value = '';
+    document.getElementById('isPostpaid').checked = false;
+    togglePostpaidInput();
+  }
+
+  function toggleStatus(id) {
+    items = items.map(item => {
+      if (item.id === id) {
+        return { ...item, status: item.status === 'active' ? 'deleted' : 'active' };
+      }
+      return item;
+    });
+    saveAndRender();
+  }
+
+  function resetAllData() {
+    if (confirm('정말로 모든 지출 내역과 해지 보관함을 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+      items = [];
+      localStorage.removeItem('myExpenditures');
+      render();
+    }
+  }
+
+  function saveAndRender() {
+    localStorage.setItem('myExpenditures', JSON.stringify(items));
+    render();
+  }
+
+  function render() {
+    const activeList = document.getElementById('activeList');
+    const deletedList = document.getElementById('deletedList');
+    
+    activeList.innerHTML = '';
+    deletedList.innerHTML = '';
+
+    let activeTotal = 0;
+    let savedTotal = 0;
+
+    const activeItems = items.filter(i => i.status === 'active');
+    const deletedItems = items.filter(i => i.status === 'deleted');
+
+    if (activeItems.length === 0) {
+      activeList.innerHTML = '<li class="empty-msg">등록된 구독 내역이 없습니다.</li>';
+    } else {
+      activeItems.forEach(item => {
+        activeTotal += item.price;
+        const logoText = item.name.substring(0, 2).toUpperCase();
+        
+        // 카드 결제일 선택 시 날짜 문자열에서 '일(Day)' 부분만 추출
+        let payInfo = '';
+        if (item.isPostpaid && item.payDate) {
+          const dayNum = item.payDate.split('-')[2];
+          payInfo = ` (카드 결제일: 매월 ${parseInt(dayNum, 10)}일)`;
+        }
+
+        activeList.innerHTML += `
+          <li class="item-card">
+            <div class="item-main">
+              <div class="item-logo">${logoText}</div>
+              <div>
+                <div class="item-title">${item.name}</div>
+                <div class="item-sub">${item.category} • ${item.spentDate}${payInfo}</div>
+              </div>
+            </div>
+            <div class="item-right">
+              <div class="item-price">${item.price.toLocaleString()}원</div>
+              <button class="action-btn" onclick="toggleStatus(${item.id})">해지/삭제</button>
+            </div>
+          </li>
+        `;
+      });
+    }
+
+    if (deletedItems.length === 0) {
+      deletedList.innerHTML = '<li class="empty-msg">해지된 항목이 없습니다.</li>';
+    } else {
+      deletedItems.forEach(item => {
+        savedTotal += item.price;
+        deletedList.innerHTML += `
+          <li class="item-card deleted">
+            <div class="item-main">
+              <div>
+                <div class="item-title" style="text-decoration: line-through;">${item.name}</div>
+                <div class="item-sub">${item.category}</div>
+              </div>
+            </div>
+            <div class="item-right">
+              <div class="item-price" style="color: #059669;">+${item.price.toLocaleString()}원 절약</div>
+              <button class="action-btn restore-btn" onclick="toggleStatus(${item.id})">다시 구독</button>
+            </div>
+          </li>
+        `;
+      });
+    }
+
+    document.getElementById('totalActive').innerText = `${activeTotal.toLocaleString()}원`;
+    document.getElementById('totalSaved').innerText = `${savedTotal.toLocaleString()}원`;
+  }
+</script>
+
+</body>
+</html>
