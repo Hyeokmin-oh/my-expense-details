@@ -2,11 +2,17 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <!-- ⚡ 캐시 방지 메타 태그 -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>스마트 자산 & 구독 관리자</title>
+
+  <!-- 📊 Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
     
@@ -29,14 +35,14 @@
       height: fit-content;
     }
 
-    /* 상단 탭 네비게이션 */
+    /* 상단 탭 */
     .nav-tabs {
       display: flex;
       background: #f1f5f9;
       padding: 4px;
       border-radius: 10px;
       margin-bottom: 14px;
-      gap: 4px;
+      gap: 2px;
     }
     
     .tab-btn {
@@ -44,7 +50,7 @@
       border: none;
       background: transparent;
       padding: 8px 0;
-      font-size: 0.75rem;
+      font-size: 0.68rem;
       font-weight: 700;
       color: #64748b;
       border-radius: 8px;
@@ -133,10 +139,50 @@
     .item-card.deleted { background: #f8fafc; opacity: 0.75; }
     
     .item-main { display: flex; align-items: center; gap: 8px; min-width: 0; }
+
+    /* 🛠️ 이모지 선택 박스 스타일 */
     .item-logo { 
-      width: 32px; height: 32px; border-radius: 8px; background: #f1f5f9; 
-      display: flex; align-items: center; justify-content: center; 
-      font-size: 1.1rem; flex-shrink: 0;
+      width: 44px; 
+      height: 44px; 
+      border-radius: 10px; 
+      background: #f1f5f9; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-size: 1.4rem; 
+      flex-shrink: 0; 
+      position: relative;
+      border: 1.5px solid #cbd5e1;
+    }
+
+    /* 🛠️ 투명 드롭다운 셀렉트 박스 (브라우저 기본 화살표 완벽 제거) */
+    .icon-select-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 2;
+      -webkit-appearance: none !important;
+      -moz-appearance: none !important;
+      appearance: none !important;
+    }
+
+    /* 🛠️ 큼직하고 명확한 커스텀 SVG 화살표 (오른쪽 아래 바짝 밀착) */
+    .item-logo::after {
+      content: '';
+      position: absolute;
+      right: 1px;
+      bottom: 1px;
+      width: 16px;
+      height: 16px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231e293b'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+      pointer-events: none;
+      z-index: 1;
     }
     
     .item-info-text { min-width: 0; overflow: hidden; }
@@ -149,7 +195,7 @@
     .restore-btn { color: #10b981; }
     .empty-msg { text-align: center; color: #94a3b8; padding: 12px 0; font-size: 0.78rem; }
 
-    /* 탭 1: 달력 CSS */
+    /* 달력 CSS */
     .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .calendar-header h2 { font-size: 0.95rem; font-weight: 700; }
     .cal-nav-btn { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
@@ -158,25 +204,86 @@
     .cal-day-head { background: #f8fafc; text-align: center; font-size: 0.68rem; font-weight: 700; padding: 4px 0; color: #64748b; }
     .cal-cell { 
       background: #ffffff; min-height: 52px; padding: 2px; display: flex; flex-direction: column; 
-      justify-content: flex-start; cursor: pointer; border-radius: 4px;
+      justify-content: flex-start; cursor: pointer; border-radius: 4px; position: relative; overflow: hidden;
     }
-    .cal-cell.today { background: #eff6ff; font-weight: 700; border: 1px solid #3b82f6; }
-    .cal-date-num { font-size: 0.68rem; color: #334155; margin-bottom: 2px; }
-    .cal-chips { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
-    
-    .chip { 
-      font-size: 0.58rem; padding: 1px 2px; border-radius: 3px; 
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1;
-    }
-    .chip-fixed { background: #dbeafe; color: #1e40af; } /* 정기 지출 (파란색) */
-    .chip-daily-out { background: #fee2e2; color: #991b1b; } /* 일별 지출 (빨간색) */
-    .chip-daily-in { background: #dcfce7; color: #166534; } /* 일별 수입 (초록색) */
+    .cal-cell.today { font-weight: 700; border: 1.5px solid #3b82f6; }
+    .cal-date-num { font-size: 0.68rem; color: #334155; margin-bottom: 2px; z-index: 2; position: relative; font-weight:600; }
 
-    /* 일별 상세 보기 팝업 레이어 */
+    /* 정기지출 분할 색상 바 */
+    .cal-color-bar-container {
+      display: flex;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 3px;
+    }
+    .cal-color-strip {
+      height: 100%;
+      flex: 1;
+    }
+
+    /* 일별 기록 이모지 칩 구역 */
+    .cal-chips { display: flex; flex-direction: column; gap: 1px; overflow: hidden; z-index: 2; }
+    .chip { 
+      font-size: 0.55rem; padding: 0 2px; border-radius: 2px; 
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; font-weight: 600;
+    }
+    .chip-daily-out { color: #dc2626; background: rgba(254, 226, 226, 0.7); }
+    .chip-daily-in { color: #166534; background: rgba(220, 252, 231, 0.7); }
+
     .day-detail-card { margin-top: 12px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; }
     .day-detail-title { font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: #0f172a; }
 
-    /* 초기화 버튼 */
+    /* 3D 차트 헤더 및 까만 테두리 뒤로가기 버튼 CSS */
+    .chart-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      min-height: 32px;
+    }
+
+    .back-btn-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #eff6ff;
+      color: #0f172a;
+      border: 2px solid #0f172a;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: all 0.15s ease;
+    }
+
+    .back-btn-pill:active {
+      background: #dbeafe;
+      transform: scale(0.96);
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      max-width: 320px;
+      margin: 10px auto 16px auto;
+      filter: drop-shadow(0px 10px 8px rgba(15, 23, 42, 0.12));
+    }
+
+    .chart-briefing {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      color: #166534;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
     .reset-container { text-align: center; margin-top: 16px; padding-top: 10px; border-top: 1px dashed #e2e8f0; }
     .reset-btn { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.72rem; cursor: pointer; }
   </style>
@@ -184,14 +291,15 @@
 <body>
 
 <div class="container">
-  <!-- 상단 탭 메뉴 -->
+  <!-- 상단 탭 -->
   <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('tab1')">📅 1. 지출 달력</button>
-    <button class="tab-btn" onclick="switchTab('tab2')">💳 2. 정기 지출</button>
-    <button class="tab-btn" onclick="switchTab('tab3')">📝 3. 일별 기록</button>
+    <button class="tab-btn active" onclick="switchTab('tab1')">📅 달력</button>
+    <button class="tab-btn" onclick="switchTab('tab2')">💳 정기 지출/구독</button>
+    <button class="tab-btn" onclick="switchTab('tab3')">📝 일별 기록</button>
+    <button class="tab-btn" onclick="switchTab('tab4')">📊 분석</button>
   </div>
 
-  <!-- ==================== 탭 1: 통합 지출 달력 ==================== -->
+  <!-- 탭 1: 지출 달력 -->
   <div id="tab1" class="tab-content active">
     <div class="calendar-header">
       <button class="cal-nav-btn" onclick="changeMonth(-1)">◀ 이전달</button>
@@ -199,39 +307,23 @@
       <button class="cal-nav-btn" onclick="changeMonth(1)">다음달 ▶</button>
     </div>
 
-    <!-- 달력 그리드 -->
     <div class="calendar-grid" id="calendarGrid"></div>
 
-    <!-- 선택 날짜 상세 리스트 -->
     <div class="day-detail-card">
       <div class="day-detail-title" id="selectedDateTitle">날짜를 터치하여 세부 내역을 확인하세요.</div>
       <ul class="item-list" id="selectedDateList" style="margin-bottom:0;"></ul>
     </div>
   </div>
 
-  <!-- ==================== 탭 2: 정기 지출 관리 ==================== -->
+  <!-- 탭 2: 정기 지출 -->
   <div id="tab2" class="tab-content">
     <div class="form-group">
-      <!-- 서비스명 및 금액 -->
       <div class="form-row">
         <input type="text" id="fixedName" placeholder="구독/고정지출명" autocomplete="off">
         <input type="number" id="fixedPrice" placeholder="금액 (원)" autocomplete="off">
       </div>
 
-      <!-- 이모지 선택기 및 카테고리 -->
       <div class="form-row">
-        <div class="select-wrapper" style="flex:0 0 70px;">
-          <select id="fixedIcon">
-            <option value="🎬">🎬</option>
-            <option value="🎵">🎵</option>
-            <option value="🛍️">🛍️</option>
-            <option value="🛵">🛵</option>
-            <option value="☁️">☁️</option>
-            <option value="🏠">🏠</option>
-            <option value="💻">💻</option>
-            <option value="📦">📦</option>
-          </select>
-        </div>
         <div class="select-wrapper">
           <select id="fixedCategory">
             <option value="🎬 OTT/영상">🎬 OTT/영상</option>
@@ -245,7 +337,6 @@
         </div>
       </div>
 
-      <!-- 결제일 선택 (1~31일) -->
       <div class="form-row">
         <span class="form-label">매월 결제일</span>
         <div class="select-wrapper">
@@ -253,7 +344,6 @@
         </div>
       </div>
 
-      <!-- 후불 결제 체크박스 -->
       <div class="checkbox-row">
         <input type="checkbox" id="isPostpaid" onchange="togglePostpaidInput()">
         <label for="isPostpaid">후불 결제 (신용카드)</label>
@@ -269,7 +359,6 @@
       <button class="btn-primary" onclick="addFixedItem()">정기 지출 추가하기</button>
     </div>
 
-    <!-- 요약 카드 -->
     <div class="summary-card">
       <div class="summary-item">
         <div class="label">월 정기 고정비</div>
@@ -288,7 +377,7 @@
     <ul class="item-list" id="deletedList"></ul>
   </div>
 
-  <!-- ==================== 탭 3: 일별 지출/수입 ==================== -->
+  <!-- 탭 3: 일별 기록 -->
   <div id="tab3" class="tab-content">
     <div class="form-group">
       <div class="form-row">
@@ -313,6 +402,31 @@
     <ul class="item-list" id="dailyList"></ul>
   </div>
 
+  <!-- 탭 4: 3D 계층형 지출 분석 -->
+  <div id="tab4" class="tab-content">
+    <div class="chart-top-bar">
+      <div>
+        <button id="backToCategoryBtn" class="back-btn-pill" style="display:none;" onclick="renderCategory3DChart()">
+          ← 전체 분석
+        </button>
+      </div>
+      <div id="chartHeaderTitle" class="section-title" style="margin:0; font-size: 0.9rem;">
+        📊 카테고리별 지출 비율 분석
+      </div>
+    </div>
+
+    <div class="chart-briefing" id="chartBriefing">
+      지출 데이터를 분석 중입니다...
+    </div>
+
+    <div class="chart-container">
+      <canvas id="expense3DChart"></canvas>
+    </div>
+
+    <div id="rankListTitle" class="section-title">카테고리별 순위 및 금액</div>
+    <ul class="item-list" id="chartDetailRankList"></ul>
+  </div>
+
   <!-- 데이터 초기화 -->
   <div class="reset-container">
     <button class="reset-btn" onclick="resetAllData()">🗑️ 모든 데이터 초기화</button>
@@ -320,13 +434,23 @@
 </div>
 
 <script>
-  // 1. 데이터 상태 (localStorage 연동)
   let fixedItems = JSON.parse(localStorage.getItem('myFixedExpenditures')) || [];
   let dailyItems = JSON.parse(localStorage.getItem('myDailyExpenditures')) || [];
+  let currentDate = new Date();
+  let chartInstance = null;
+  let selectedCategoryState = null;
 
-  let currentDate = new Date(); // 달력 현재 조회 월
+  // 카테고리별 고유 색상 매핑
+  const categoryColorMap = {
+    '🎬 OTT/영상': '#3b82f6',
+    '🎵 음원': '#8b5cf6',
+    '🛍️ 쇼핑/멤버십': '#f59e0b',
+    '🛵 배달/푸드': '#ef4444',
+    '☁️ 클라우드/IT': '#06b6d4',
+    '🏠 월세/고정비': '#10b981',
+    '📦 기타': '#64748b'
+  };
 
-  // 드롭다운 옵션 (1일~31일) 동적 생성
   function initDaySelects() {
     const fixedDaySelect = document.getElementById('fixedDayNum');
     const cardPaySelect = document.getElementById('cardPayDayNum');
@@ -340,12 +464,10 @@
     }
   }
 
-  // 초기화 실행
   initDaySelects();
   document.getElementById('dailyDate').value = new Date().toISOString().substring(0, 10);
   renderAll();
 
-  // 탭 전환 핸들러
   function switchTab(tabId) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -354,6 +476,7 @@
     document.getElementById(tabId).classList.add('active');
 
     if (tabId === 'tab1') renderCalendar();
+    if (tabId === 'tab4') renderCategory3DChart();
   }
 
   function togglePostpaidInput() {
@@ -361,11 +484,9 @@
     document.getElementById('payDayContainer').style.display = isPostpaid ? 'flex' : 'none';
   }
 
-  // 2. 정기 지출 추가 (탭 2)
   function addFixedItem() {
     const name = document.getElementById('fixedName').value.trim();
     const price = Number(document.getElementById('fixedPrice').value);
-    const icon = document.getElementById('fixedIcon').value;
     const category = document.getElementById('fixedCategory').value;
     const dayNum = Number(document.getElementById('fixedDayNum').value);
     const isPostpaid = document.getElementById('isPostpaid').checked;
@@ -376,16 +497,18 @@
       return;
     }
 
-    const newItem = {
-      id: Date.now(),
-      name,
-      price,
-      icon,
-      category,
-      dayNum,
-      isPostpaid,
-      cardPayDayNum,
-      status: 'active'
+    const defaultIcon = category.split(' ')[0] || '💳';
+
+    const newItem = { 
+      id: Date.now(), 
+      name, 
+      price, 
+      icon: defaultIcon, 
+      category, 
+      dayNum, 
+      isPostpaid, 
+      cardPayDayNum, 
+      status: 'active' 
     };
 
     fixedItems.push(newItem);
@@ -397,7 +520,16 @@
     togglePostpaidInput();
   }
 
-  // 3. 일별 지출/수입 추가 (탭 3)
+  function updateFixedIcon(id, newIcon) {
+    fixedItems = fixedItems.map(item => {
+      if (item.id === id) {
+        return { ...item, icon: newIcon };
+      }
+      return item;
+    });
+    saveAndRender();
+  }
+
   function addDailyItem() {
     const type = document.getElementById('dailyType').value;
     const name = document.getElementById('dailyName').value.trim();
@@ -409,19 +541,29 @@
       return;
     }
 
-    const newItem = {
-      id: Date.now(),
-      type,
-      name,
-      price,
-      date
+    const newItem = { 
+      id: Date.now(), 
+      type, 
+      name, 
+      price, 
+      date,
+      category: type === '수입' ? '💰 수입' : '🍱 식비/외식'
     };
-
     dailyItems.push(newItem);
     saveAndRender();
 
     document.getElementById('dailyName').value = '';
     document.getElementById('dailyPrice').value = '';
+  }
+
+  function updateDailyCategory(id, newCategory) {
+    dailyItems = dailyItems.map(item => {
+      if (item.id === id) {
+        return { ...item, category: newCategory };
+      }
+      return item;
+    });
+    saveAndRender();
   }
 
   function toggleFixedStatus(id) {
@@ -457,9 +599,16 @@
     renderFixedList();
     renderDailyList();
     renderCalendar();
+    if (document.getElementById('tab4').classList.contains('active')) {
+      if (selectedCategoryState) {
+        renderSubItem3DChart(selectedCategoryState);
+      } else {
+        renderCategory3DChart();
+      }
+    }
   }
 
-  // 정기 지출 정렬 렌더링 (카테고리별 + 금액 내림차순)
+  /* 🛠️ 유지 중인 정기 지출 리스트 (icon-select-overlay 전용 클래스 적용) */
   function renderFixedList() {
     const activeList = document.getElementById('activeList');
     const deletedList = document.getElementById('deletedList');
@@ -473,12 +622,9 @@
     const activeItems = fixedItems.filter(i => i.status === 'active');
     const deletedItems = fixedItems.filter(i => i.status === 'deleted');
 
-    // 💡 수정사항 1: 카테고리 가나다순 정렬 후, 동일 카테고리 내 금액 내림차순 정렬
     activeItems.sort((a, b) => {
-      if (a.category === b.category) {
-        return b.price - a.price; // 금액 큰 순서대로
-      }
-      return a.category.localeCompare(b.category); // 카테고리 가나다순
+      if (a.category === b.category) return b.price - a.price;
+      return a.category.localeCompare(b.category);
     });
 
     if (activeItems.length === 0) {
@@ -488,10 +634,21 @@
         activeTotal += item.price;
         const cardInfo = item.isPostpaid ? ` (카드 출금: 매월 ${item.cardPayDayNum}일)` : '';
 
+        const emojiList = ['🎬', '🎵', '🛍️', '🛵', '☁️', '🏠', '💻', '📦', '🏋️'];
+        const iconOptions = emojiList
+          .map(emoji => `<option value="${emoji}" ${item.icon === emoji ? 'selected' : ''}>${emoji}</option>`)
+          .join('');
+
         activeList.innerHTML += `
           <li class="item-card">
             <div class="item-main">
-              <div class="item-logo">${item.icon || '💳'}</div>
+              <div class="item-logo" title="터치하여 이모지 변경">
+                <!-- 💡 icon-select-overlay 클래스 지정으로 기본 화살표 완벽 제거 -->
+                <select class="icon-select-overlay" onchange="updateFixedIcon(${item.id}, this.value)">
+                  ${iconOptions}
+                </select>
+                <span>${item.icon || '💳'}</span>
+              </div>
               <div class="item-info-text">
                 <div class="item-title">${item.name}</div>
                 <div class="item-sub">${item.category} • 매월 ${item.dayNum}일 결제${cardInfo}</div>
@@ -533,7 +690,6 @@
     document.getElementById('totalSaved').innerText = `${savedTotal.toLocaleString()}원`;
   }
 
-  // 일별 내역 렌더링 (최신 날짜순)
   function renderDailyList() {
     const dailyList = document.getElementById('dailyList');
     dailyList.innerHTML = '';
@@ -547,6 +703,18 @@
         const isExpense = item.type === '지출';
         const color = isExpense ? '#ef4444' : '#10b981';
         const prefix = isExpense ? '-' : '+';
+        const currentCat = item.category || '🍱 식비/외식';
+
+        const categoryOptions = `
+          <option value="🍱 식비/외식" ${currentCat === '🍱 식비/외식' ? 'selected' : ''}>🍱 식비/외식</option>
+          <option value="☕ 카페/디저트" ${currentCat === '☕ 카페/디저트' ? 'selected' : ''}>☕ 카페/디저트</option>
+          <option value="🛍️ 생필품/쇼핑" ${currentCat === '🛍️ 생필품/쇼핑' ? 'selected' : ''}>🛍️ 생필품/쇼핑</option>
+          <option value="🚗 교통/차관련" ${currentCat === '🚗 교통/차관련' ? 'selected' : ''}>🚗 교통/차관련</option>
+          <option value="🎬 문화/취미/오락" ${currentCat === '🎬 문화/취미/오락' ? 'selected' : ''}>🎬 문화/취미/오락</option>
+          <option value="💊 의료/건강" ${currentCat === '💊 의료/건강' ? 'selected' : ''}>💊 의료/건강</option>
+          <option value="🎁 경조사/선물" ${currentCat === '🎁 경조사/선물' ? 'selected' : ''}>🎁 경조사/선물</option>
+          <option value="📦 기타 변동비" ${currentCat === '📦 기타 변동비' ? 'selected' : ''}>📦 기타 변동비</option>
+        `;
 
         dailyList.innerHTML += `
           <li class="item-card">
@@ -554,7 +722,14 @@
               <div class="item-logo">${isExpense ? '💸' : '💰'}</div>
               <div class="item-info-text">
                 <div class="item-title">${item.name}</div>
-                <div class="item-sub">${item.date} (${item.type})</div>
+                <div class="item-sub" style="display:flex; align-items:center; gap:4px; margin-top:2px;">
+                  ${item.date} • 
+                  ${isExpense ? `
+                    <select style="height:20px; font-size:0.65rem; padding:0 2px; border-radius:4px; border:1px solid #cbd5e1;" onchange="updateDailyCategory(${item.id}, this.value)">
+                      ${categoryOptions}
+                    </select>
+                  ` : '💰 수입'}
+                </div>
               </div>
             </div>
             <div class="item-right">
@@ -567,57 +742,57 @@
     }
   }
 
-  // 4. 통합 달력 엔진 (탭 1)
   function renderCalendar() {
     const year = currentDate.getFullYear();
-    const month = currentDate.getMonth(); // 0~11
+    const month = currentDate.getMonth();
 
     document.getElementById('calYearMonth').innerText = `${year}년 ${month + 1}월`;
 
     const grid = document.getElementById('calendarGrid');
     grid.innerHTML = '';
 
-    // 요일 헤더
     const days = ['일', '월', '화', '수', '목', '금', '토'];
     days.forEach(d => grid.innerHTML += `<div class="cal-day-head">${d}</div>`);
 
     const firstDayIndex = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
 
-    // 이전 달 빈 칸
     for (let i = 0; i < firstDayIndex; i++) {
       grid.innerHTML += `<div class="cal-cell" style="background:#f8fafc; cursor:default;"></div>`;
     }
 
     const todayStr = new Date().toISOString().substring(0, 10);
 
-    // 날짜 칸 채우기
     for (let day = 1; day <= lastDate; day++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const isToday = dateStr === todayStr;
 
-      // 1) 해당 일자의 정기 지출 추출
       const dayFixed = fixedItems.filter(i => i.status === 'active' && i.dayNum === day);
-      
-      // 2) 해당 일자의 일별 수입/지출 추출
       const dayDaily = dailyItems.filter(i => i.date === dateStr);
 
+      let colorBarHtml = '';
+      if (dayFixed.length > 0) {
+        const categories = [...new Set(dayFixed.map(f => f.category))];
+        let stripsHtml = '';
+        categories.forEach(cat => {
+          const color = categoryColorMap[cat] || '#3b82f6';
+          stripsHtml += `<div class="cal-color-strip" style="background-color:${color};" title="${cat}"></div>`;
+        });
+        colorBarHtml = `<div class="cal-color-bar-container">${stripsHtml}</div>`;
+      }
+
       let chipsHtml = '';
-
-      // 정기 지출 칩 (파란색)
-      dayFixed.forEach(f => {
-        chipsHtml += `<div class="chip chip-fixed">${f.icon || '💳'} ${f.name}</div>`;
-      });
-
-      // 일별 내역 칩
       dayDaily.forEach(d => {
-        const chipClass = d.type === '지출' ? 'chip-daily-out' : 'chip-daily-in';
-        chipsHtml += `<div class="chip ${chipClass}">${d.name} ${d.price.toLocaleString()}</div>`;
+        const isExpense = d.type === '지출';
+        const chipClass = isExpense ? 'chip-daily-out' : 'chip-daily-in';
+        const formattedPrice = d.price >= 10000 ? `${(d.price / 10000).toFixed(1)}만` : `${d.price.toLocaleString()}`;
+        chipsHtml += `<div class="chip ${chipClass}">${isExpense ? '💸' : '💰'} ${formattedPrice}</div>`;
       });
 
       grid.innerHTML += `
         <div class="cal-cell ${isToday ? 'today' : ''}" onclick="showDayDetails('${dateStr}', ${day})">
           <div class="cal-date-num">${day}</div>
+          ${colorBarHtml}
           <div class="cal-chips">${chipsHtml}</div>
         </div>
       `;
@@ -629,7 +804,6 @@
     renderCalendar();
   }
 
-  // 달력 날짜 클릭 시 하단에 세부 내역 표시
   function showDayDetails(dateStr, dayNum) {
     const title = document.getElementById('selectedDateTitle');
     const list = document.getElementById('selectedDateList');
@@ -645,7 +819,6 @@
       return;
     }
 
-    // 정기 지출 표시
     dayFixed.forEach(f => {
       list.innerHTML += `
         <li class="item-card">
@@ -661,16 +834,16 @@
       `;
     });
 
-    // 일별 내역 표시
     dayDaily.forEach(d => {
       const isExpense = d.type === '지출';
+      const catText = isExpense ? (d.category || '🍱 식비/외식') : '💰 수입';
       list.innerHTML += `
         <li class="item-card">
           <div class="item-main">
             <div class="item-logo">${isExpense ? '💸' : '💰'}</div>
             <div class="item-info-text">
               <div class="item-title">${d.name}</div>
-              <div class="item-sub">[일별 ${d.type}]</div>
+              <div class="item-sub">[일별] ${catText}</div>
             </div>
           </div>
           <div class="item-price" style="color: ${isExpense ? '#ef4444' : '#10b981'};">
@@ -678,6 +851,216 @@
           </div>
         </li>
       `;
+    });
+  }
+
+  function renderCategory3DChart() {
+    selectedCategoryState = null;
+    document.getElementById('backToCategoryBtn').style.display = 'none';
+    document.getElementById('chartHeaderTitle').innerText = '📊 카테고리별 지출 비율 분석';
+    document.getElementById('rankListTitle').innerText = '카테고리별 순위 및 금액';
+
+    const categoryTotals = {};
+    let grandTotal = 0;
+
+    fixedItems.filter(i => i.status === 'active').forEach(item => {
+      categoryTotals[item.category] = (categoryTotals[item.category] || 0) + item.price;
+      grandTotal += item.price;
+    });
+
+    dailyItems.filter(i => i.type === '지출').forEach(item => {
+      const catKey = item.category || '🍱 식비/외식';
+      categoryTotals[catKey] = (categoryTotals[catKey] || 0) + item.price;
+      grandTotal += item.price;
+    });
+
+    const rankList = document.getElementById('chartDetailRankList');
+    const briefingBox = document.getElementById('chartBriefing');
+    rankList.innerHTML = '';
+
+    const sortedCategories = Object.keys(categoryTotals).map(cat => ({
+      category: cat,
+      price: categoryTotals[cat]
+    })).sort((a, b) => b.price - a.price);
+
+    if (sortedCategories.length === 0 || grandTotal === 0) {
+      briefingBox.innerHTML = '💡 아직 등록된 지출 내역이 없습니다. 지출을 추가해 보세요!';
+      if (chartInstance) chartInstance.destroy();
+      return;
+    }
+
+    const topCat = sortedCategories[0];
+    const topPct = Math.round((topCat.price / grandTotal) * 100);
+    briefingBox.innerHTML = `💡 총 지출 <strong>${grandTotal.toLocaleString()}원</strong> 중 <strong>${topCat.category} (${topPct}%)</strong> 비중이 가장 큽니다.<br><span style="font-size:0.75rem; color:#3b82f6;">👇 차트나 하단 카테고리를 누르면 세부 항목 3D 차트로 들어갑니다!</span>`;
+
+    const labels = sortedCategories.map(c => c.category);
+    const dataValues = sortedCategories.map(c => c.price);
+
+    sortedCategories.forEach((c, idx) => {
+      const pct = Math.round((c.price / grandTotal) * 100);
+      rankList.innerHTML += `
+        <li class="item-card" style="cursor:pointer;" onclick="renderSubItem3DChart('${c.category}')">
+          <div class="item-main">
+            <div class="item-logo">📂</div>
+            <div class="item-info-text">
+              <div class="item-title">${idx + 1}위. ${c.category}</div>
+              <div class="item-sub">터치하여 세부 항목 3D 차트 보기 ➔</div>
+            </div>
+          </div>
+          <div class="item-right">
+            <div class="item-price">${c.price.toLocaleString()}원</div>
+            <div style="font-size:0.7rem; color:#3b82f6; font-weight:bold;">${pct}%</div>
+          </div>
+        </li>
+      `;
+    });
+
+    const colorPalette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#64748b'];
+
+    const ctx = document.getElementById('expense3DChart').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
+
+    chartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: dataValues,
+          backgroundColor: colorPalette.slice(0, labels.length),
+          borderWidth: 2,
+          borderColor: '#ffffff',
+          hoverOffset: 12
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: '50%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { boxWidth: 10, font: { size: 10, weight: 'bold' }, padding: 8 }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const val = context.raw || 0;
+                const pct = Math.round((val / grandTotal) * 100);
+                return ` ${context.label}: ${val.toLocaleString()}원 (${pct}%)`;
+              }
+            }
+          }
+        },
+        onClick: (evt, activeElements) => {
+          if (activeElements.length > 0) {
+            const index = activeElements[0].index;
+            const targetCategory = labels[index];
+            renderSubItem3DChart(targetCategory);
+          }
+        }
+      }
+    });
+  }
+
+  function renderSubItem3DChart(categoryName) {
+    selectedCategoryState = categoryName;
+    document.getElementById('backToCategoryBtn').style.display = 'inline-flex';
+    document.getElementById('chartHeaderTitle').innerText = `📊 [${categoryName}] 분석`;
+    document.getElementById('rankListTitle').innerText = `[${categoryName}] 세부 항목 순위`;
+
+    const subItems = [];
+    let categoryTotal = 0;
+
+    fixedItems.filter(i => i.status === 'active' && i.category === categoryName).forEach(item => {
+      subItems.push({ name: item.name, price: item.price, icon: item.icon || '💳' });
+      categoryTotal += item.price;
+    });
+
+    dailyItems.filter(i => i.type === '지출' && (i.category || '🍱 식비/외식') === categoryName).forEach(item => {
+      const existing = subItems.find(s => s.name === item.name);
+      if (existing) {
+        existing.price += item.price;
+      } else {
+        subItems.push({ name: item.name, price: item.price, icon: '💸' });
+      }
+      categoryTotal += item.price;
+    });
+
+    subItems.sort((a, b) => b.price - a.price);
+
+    const rankList = document.getElementById('chartDetailRankList');
+    const briefingBox = document.getElementById('chartBriefing');
+    rankList.innerHTML = '';
+
+    if (subItems.length === 0) {
+      briefingBox.innerHTML = `💡 ${categoryName} 카테고리에 등록된 상세 지출이 없습니다.`;
+      if (chartInstance) chartInstance.destroy();
+      return;
+    }
+
+    const topSub = subItems[0];
+    const topPct = Math.round((topSub.price / categoryTotal) * 100);
+    briefingBox.innerHTML = `🔎 <strong>${categoryName}</strong> 총액: <strong>${categoryTotal.toLocaleString()}원</strong><br>가장 큰 항목은 <strong>${topSub.icon} ${topSub.name} (${topSub.price.toLocaleString()}원, ${topPct}%)</strong>입니다.`;
+
+    const labels = subItems.map(s => `${s.icon} ${s.name}`);
+    const dataValues = subItems.map(s => s.price);
+
+    subItems.forEach((sub, idx) => {
+      const pct = Math.round((sub.price / categoryTotal) * 100);
+      rankList.innerHTML += `
+        <li class="item-card">
+          <div class="item-main">
+            <div class="item-logo">${sub.icon}</div>
+            <div class="item-info-text">
+              <div class="item-title">${idx + 1}위. ${sub.name}</div>
+              <div class="item-sub">${categoryName}</div>
+            </div>
+          </div>
+          <div class="item-right">
+            <div class="item-price">${sub.price.toLocaleString()}원</div>
+            <div style="font-size:0.7rem; color:#059669; font-weight:bold;">${pct}%</div>
+          </div>
+        </li>
+      `;
+    });
+
+    const colorPalette = ['#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#06b6d4', '#f97316'];
+
+    const ctx = document.getElementById('expense3DChart').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
+
+    chartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: dataValues,
+          backgroundColor: colorPalette.slice(0, subItems.length),
+          borderWidth: 2,
+          borderColor: '#ffffff',
+          hoverOffset: 12
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: '50%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { boxWidth: 10, font: { size: 10, weight: 'bold' }, padding: 8 }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const val = context.raw || 0;
+                const pct = Math.round((val / categoryTotal) * 100);
+                return ` ${context.label}: ${val.toLocaleString()}원 (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
     });
   }
 </script>
